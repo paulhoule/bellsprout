@@ -3,7 +3,7 @@ from pathlib import Path
 import imageio
 
 src = Path.home() / "radar/Conus/RadarImg"
-infiles = list(src.glob("*.gif"))
+infiles = sorted(src.glob("*.gif"))
 
 with imageio.get_writer(
         str(Path.home() / "northeast.gif"),
