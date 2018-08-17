@@ -49,7 +49,7 @@ class RadarFetch():
             if target_file.exists():
                 _logger.debug(f"File already exists -- no need to download {href}")
             else:
-                _logger.warn(f"Downloading {href}")
+                _logger.warning(f"Downloading {href}")
                 gif_data = self._session.get(url_directory + href)
                 with open(target_file,"wb") as FILE:
                     FILE.write(gif_data.content)
