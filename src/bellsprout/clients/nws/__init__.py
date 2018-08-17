@@ -7,7 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 
 _logger = getLogger(__package__)
-basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.WARN)
+basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.ERROR)
 
 class RadarFetch():
     def __init__(self):
@@ -33,7 +33,7 @@ class RadarFetch():
         target_dir.mkdir(parents=True, exist_ok=True)
 
         url_directory = self._source_base + product_dir + "/"
-        _logger.error(f"Checking {url_directory}")
+        _logger.warning(f"Checking {url_directory}")
         target = self._session.get(url_directory).text
         soup = BeautifulSoup(target,features="lxml")
         links = soup.find_all("a")
@@ -49,12 +49,10 @@ class RadarFetch():
             if target_file.exists():
                 _logger.debug(f"File already exists -- no need to download {href}")
             else:
-                _logger.error(f"Downloading {href}")
+                _logger.warn(f"Downloading {href}")
                 gif_data = self._session.get(url_directory + href)
                 with open(target_file,"wb") as FILE:
                     FILE.write(gif_data.content)
 
 f = RadarFetch()
-while True:
-    f.refresh()
-    time.sleep(60)
+f.refresh()
