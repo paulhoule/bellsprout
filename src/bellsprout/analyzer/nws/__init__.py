@@ -6,7 +6,7 @@ src = Path.home() / "radar/Conus/RadarImg"
 infiles = sorted(src.glob("*.gif"))
 
 with imageio.get_writer(
-        str(Path.home() / "northeast.gif"),
+        str(Path.home() / "northeast.avi"),
         mode='I',fps=10) as writer:
     for file in infiles:
         content = imageio.imread(str(file))
