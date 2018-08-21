@@ -62,7 +62,7 @@ f.refresh()
 src = Path.home() / "radar/Conus/RadarImg"
 infiles = sorted(src.glob("*.gif"))
 processed = Path.home() / "radar/processed"
-processed.mkdir(parents=True,exists_ok=True)
+processed.mkdir(parents=True,exist_ok=True)
 with imageio.get_writer(
         str(processed / "northeast.avi"),
         mode='I',fps=10) as writer:
