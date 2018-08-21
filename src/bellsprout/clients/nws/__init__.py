@@ -3,6 +3,8 @@ import re
 import time
 from logging import getLogger, basicConfig
 from pathlib import Path
+
+import imageio
 import requests
 from bs4 import BeautifulSoup
 
@@ -56,3 +58,14 @@ class RadarFetch():
 
 f = RadarFetch()
 f.refresh()
+
+src = Path.home() / "radar/Conus/RadarImg"
+infiles = sorted(src.glob("*.gif"))
+processed = Path.home() / "radar/processed"
+processed.mkdir(parents=True,exists_ok=True)
+with imageio.get_writer(
+        str(processed / "northeast.avi"),
+        mode='I',fps=10) as writer:
+    for file in infiles:
+        content = imageio.imread(str(file))
+        writer.append_data(content)
