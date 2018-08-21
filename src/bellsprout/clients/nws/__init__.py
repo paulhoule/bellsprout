@@ -2,6 +2,7 @@ import logging
 import re
 import time
 from logging import getLogger, basicConfig
+from math import floor
 from pathlib import Path
 
 import imageio
@@ -10,6 +11,8 @@ from bs4 import BeautifulSoup
 
 _logger = getLogger(__package__)
 basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.ERROR)
+
+# 600 x 576
 
 class RadarFetch():
     def __init__(self):
@@ -64,8 +67,21 @@ infiles = sorted(src.glob("*.gif"))
 processed = Path("/var/www/html/radar/")
 processed.mkdir(parents=True,exist_ok=True)
 with imageio.get_writer(
-        str(processed / "northeast.avi"),
+        str(processed / "northeast.mp4"),
         mode='I',fps=10) as writer:
     for file in infiles:
-        content = imageio.imread(str(file))
-        writer.append_data(content)
+        try:
+            content = imageio.imread(str(file))
+        except:
+            print("Could not read image from "+str(file)+" deleting")
+            file.unlink()
+            continue
+
+        # the image should be divisible for 16x16 macroblocks;  crop away the from the left
+        # and the top because my judgement is that for the northeast case this is best.
+        (width,height,channels) = content.shape
+        legal_width = 16*floor(width/16)
+        legal_height= 16*floor(height/16)
+        cropped = content[-legal_width:,-legal_height:]
+
+        writer.append_data(cropped)
