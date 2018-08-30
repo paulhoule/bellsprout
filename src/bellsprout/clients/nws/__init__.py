@@ -1,6 +1,7 @@
+import datetime
+
 import logging
 import re
-import time
 from logging import getLogger, basicConfig
 from math import floor
 from pathlib import Path
@@ -62,8 +63,25 @@ class RadarFetch():
 f = RadarFetch()
 f.refresh()
 
+now = datetime.datetime.now(datetime.timezone.utc)
+window = datetime.timedelta(days=2)
+
 src = Path.home() / "radar/Conus/RadarImg"
 infiles = sorted(src.glob("*.gif"))
+file_pattern=re.compile(r"_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2}).gif$")
+
+def date_from_filename(name):
+    match = file_pattern.search(name)
+    if not match:
+        return None
+
+    (year,month,day,hour,minute) = map(int,match.groups())
+    return datetime.datetime(year,month,day,hour,minute, tzinfo=datetime.timezone.utc)
+
+dated = [{"path": file,"timestamp": date_from_filename(file.name)}for file in infiles]
+dated = [{**row, "age":now-row["timestamp"]} for row in dated if row["timestamp"]]
+dated = [row for row in dated if row["age"]<window]
+
 processed = Path("/var/www/html/radar/")
 processed.mkdir(parents=True,exist_ok=True)
 with imageio.get_writer(
