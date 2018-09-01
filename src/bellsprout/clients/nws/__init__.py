@@ -57,8 +57,10 @@ class RadarFetch():
             else:
                 _logger.warning(f"Downloading {href}")
                 gif_data = self._session.get(url_directory + href)
-                with open(target_file,"wb") as FILE:
-                    FILE.write(gif_data.content)
+                if gif_data.ok and gif_data.content:
+                    with open(target_file,"wb") as FILE:
+                        pass
+                        FILE.write(gif_data.content)
 
 f = RadarFetch()
 f.refresh()
@@ -90,9 +92,16 @@ with imageio.get_writer(
     for file in infiles:
         try:
             content = imageio.imread(str(file))
-        except:
+        except ValueError as err:
+            print(str(type(err)) + ":" + str(err))
             print("Could not read image from "+str(file)+" deleting")
-            file.unlink()
+            try:
+                # if the file is corrupt ignore it and get rid of it
+                file.unlink()
+                # on Windows the file might not have been released by imageio and we might
+                # not be able to delete it
+            except PermissionError:
+                pass
             continue
 
         # the image should be divisible for 16x16 macroblocks;  crop away the from the left
