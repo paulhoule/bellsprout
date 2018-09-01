@@ -89,7 +89,8 @@ processed.mkdir(parents=True,exist_ok=True)
 with imageio.get_writer(
         str(processed / "northeast.mp4"),
         mode='I',fps=10) as writer:
-    for file in infiles:
+    for item in dated:
+        file = item["path"]
         try:
             content = imageio.imread(str(file))
         except ValueError as err:
