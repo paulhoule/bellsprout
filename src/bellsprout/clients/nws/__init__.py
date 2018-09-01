@@ -1,7 +1,9 @@
 import datetime
 
 import logging
+import os
 import re
+import sys
 from logging import getLogger, basicConfig
 from math import floor
 from pathlib import Path
@@ -86,8 +88,13 @@ dated = [row for row in dated if row["age"]<window]
 
 processed = Path("/var/www/html/radar/")
 processed.mkdir(parents=True,exist_ok=True)
+# tomorrow:  write file to temp location and rename it to greatly reduce vulnerability
+# window for filesystem changes.  currently the movie download is 0.5 sec on WiFi so the
+# gap is narrow
+movie_out = str(processed / "northeast.mp4")
+movie_temp = movie_out[:-4]+"-temp.mp4"
 with imageio.get_writer(
-        str(processed / "northeast.mp4"),
+        movie_temp,
         mode='I',fps=10) as writer:
     for item in dated:
         file = item["path"]
@@ -113,3 +120,8 @@ with imageio.get_writer(
         cropped = content[-legal_width:,-legal_height:]
 
         writer.append_data(cropped)
+
+if not sys.platform.startswith('linux'):
+    if os.path.exists(movie_out):
+        os.unlink(movie_out)
+os.rename(movie_temp,movie_out)
