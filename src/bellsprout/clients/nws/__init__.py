@@ -118,7 +118,7 @@ class RadarFetch:
         os.rename(movie_temp, movie_out)
 
 def radar_file_date(name):
-    file_pattern = re.compile(r"_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(?:_N0R)?.gif$")
+    file_pattern = re.compile(r"_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(?:_N0R|_N1P)?.gif$")
     match = file_pattern.search(name)
     if not match:
         return None
@@ -129,16 +129,21 @@ def radar_file_date(name):
 f = RadarFetch(
     "https://radar.weather.gov/",
     [
+#        dict(
+#            pattern = "ridge/RadarImg/N0R/BGM/BGM_[0-9]{8}_[0-9]{4}_N0R.gif",
+#            date_fn = radar_file_date,
+#            video = "N0RBGM.mp4"
+#        ),
         dict(
-            pattern = "ridge/RadarImg/N0R/BGM/BGM_[0-9]{8}_[0-9]{4}_N0R.gif",
-            date_fn = radar_file_date,
-            video = "N0RBGM.mp4"
-        ),
-        dict(
-            pattern = "Conus/RadarImg/northeast_[0-9]{8}_[0-9]{4}.gif",
-            date_fn = radar_file_date,
-            video = "northeast.mp4"
+            pattern="ridge/RadarImg/N1P/BGM/BGM_[0-9]{8}_[0-9]{4}_N1P.gif",
+            date_fn=radar_file_date,
+            video="N1PBGM.mp4"
         )
+#        dict(
+#            pattern = "Conus/RadarImg/northeast_[0-9]{8}_[0-9]{4}.gif",
+#            date_fn = radar_file_date,
+#            video = "northeast.mp4"
+#        )
 ],
     radar_file_date
 )
