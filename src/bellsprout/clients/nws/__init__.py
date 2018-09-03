@@ -13,8 +13,9 @@ import numpy as np
 import requests
 from bs4 import BeautifulSoup
 
+log_level = os.environ.get("LOG_LEVEL","ERROR")
 _logger = getLogger(__package__)
-basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.WARNING)
+basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=log_level)
 
 # 600 x 576
 
