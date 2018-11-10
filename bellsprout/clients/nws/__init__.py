@@ -106,7 +106,7 @@ class RadarFetch:
             for item in dated:
                 file = item["path"]
                 try:
-                    content = self._compose_frame(imageio.imread(file), overlays)
+                    content = self._compose_frame(file, overlays)
                 except ValueError as err:
                     print(str(type(err)) + ":" + str(err))
                     print("Could not read image from " + str(file) + " deleting")
@@ -148,22 +148,22 @@ class RadarFetch:
         infiles = sorted(src.glob(f"*.{ext}"))
         return infiles
 
+
+
     def _make_still(self,pattern):
         if "still" not in pattern:
             return
 
         last_shot = self._lookup_matching(pattern)[-1]
         overlays = self._load_overlays(pattern)
-        content = self._compose_frame(imageio.imread(last_shot), overlays)
+        content = self._compose_frame(last_shot, overlays)
         imageio.imwrite(self._output / pattern["still"],content,"PNG-FI")
 
     def _load_overlays(self,pattern):
         output = []
         if "overlays" in pattern:
             for file_name in pattern["overlays"]:
-                overlay = imageio.imread(self._cache / file_name)
-                if len(overlay.shape) == 2:
-                    overlay = np.broadcast_to(np.expand_dims(overlay, axis=-1), overlay.shape + (4,))
+                overlay = load_masked_image(self._cache / file_name)
                 output.append(overlay)
         return output
 
@@ -173,20 +173,40 @@ class RadarFetch:
 
         output = overlays[0]
         for overlay in overlays[1:]:
-            output = alpha_composite(output,overlay)
+            output = fast_composite(output,overlay)
 
         return [output]
 
     def _compose_frame(self, input, overlays):
-        content = floatify(input)
-        if len(content.shape) == 2:
-            content = np.broadcast_to(np.expand_dims(content, axis=-1), content.shape + (4,))
-        content[:, :, 3:] = 1.0
-        for overlay in overlays:
-            content = alpha_composite(content, overlay)
-        content = byteify(content[:, :, 0:3])
-        return content
+        content = load_masked_image(self._cache / input)
+        content = black_background(content)
 
+        for overlay in overlays:
+           content = fast_composite(content, overlay)
+        return content[0].astype(np.uint8)
+
+def load_masked_image(path):
+    img = imageio.imread(path)
+    if len(img.shape)==2:
+        rgb = np.broadcast_to(np.expand_dims(img, axis=-1), img.shape + (3,))
+        alpha = np.expand_dims(img.astype(bool), axis=-1)
+        return (rgb,alpha)
+    rgb = img[:,:,0:3]
+    alpha = img[:,:, 3:].astype(bool)
+    return (rgb,alpha)
+
+def fast_composite(below,above):
+    rgb = above[0] * above[1] + below[0] * (1-above[1])
+    alpha = above[1] | below[1]
+    return (rgb,alpha)
+
+def black_background(above):
+    if (above[0]==255).all() and (above[1]==True).all():
+        return (above[0]*0, above[1] | True)
+
+    rgb = above[0] * above[1]
+    alpha = above[1] | True
+    return (rgb,alpha)
 
 def floatify(img):
     return img.astype("f8")/255.0
