@@ -12,6 +12,9 @@ imageio = "^2.4"
 numpy = "^1.15"
 lxml = "^4.2"
 pillow = "^5.3"
+metar = "^1.6"
+pyyaml = "^3.13"
+python-arango = "^4.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"

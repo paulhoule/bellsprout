@@ -1,9 +1,7 @@
 import math
 
-from metar import Metar
+from metar.Metar import Metar
 import requests
-
-airport="KITH"
 
 session=requests.Session()
 def get_metar(airport):
@@ -11,14 +9,17 @@ def get_metar(airport):
     url = f"{stations}/{airport}.TXT"
     text = session.get(url).text
     parts = text.split('\n')
-    return parts[1]
+    metar = internal_metar(parts[1])
+    assign_key(metar)
+    return metar
 
 def rel_humidity(temp,dewpt):
     return 100.0 * (math.exp((17.625 * dewpt) / (243.04 + dewpt)) /
                     math.exp((17.625 * temp) / (243.04 + temp)))
 
-def internal_metar(wxd):
+def internal_metar(metar_text):
     document = {}
+    wxd = Metar(metar_text)
     document["station"] = wxd.station_id
 
     if wxd.type:
@@ -58,5 +59,6 @@ def internal_metar(wxd):
 
     return document
 
-
-
+def assign_key(metar_data):
+    parts = metar_data["code"].split(" ")
+    metar_data["_key"] = metar_data["station"] + '-' + '201811' + '-' + parts[1]
