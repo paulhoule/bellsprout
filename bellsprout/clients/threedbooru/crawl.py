@@ -19,17 +19,17 @@ i_have = {int(x.split('.')[0]) for x in listdir(where)}
 crawl_list = choices(list(population-i_have), k=sample_size)
 
 
-
 headers = {
     "User-Agent": "Kyubey 33.7 (have been using up spares)"
 }
+
 
 for x in crawl_list:
    sleep(1)
    url = f"http://behoimi.org/post/show/{x}"
    try:
        print("Fetching "+url)
-       result = requests.get(url, headers=headers)
+       result = requests.get(url, headers=headers, timeout=20)
        if result.status_code==200:
            with gzip.open(where / f"{x}.html.gz","wt") as OUTPUT:
             OUTPUT.write(result.text)
