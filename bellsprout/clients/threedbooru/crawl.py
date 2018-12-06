@@ -8,7 +8,7 @@ import requests
 
 where = Path.home() / "3dbooru"
 upper_bound = 641067
-sample_size = 25000
+sample_size = 50000
 
 if not where.exists():
     where.mkdir(parents=True)
@@ -20,7 +20,7 @@ crawl_list = choices(list(population-i_have), k=sample_size)
 
 
 headers = {
-    "User-Agent": "Kyubey 33.7 (have been using up spares)"
+    "User-Agent": "Kyubey 34 (MonoCrawler/1.1; Are you feeling Hope or Despair?)"
 }
 
 

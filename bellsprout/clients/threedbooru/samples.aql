@@ -1,0 +1,18 @@
+#
+# fetch property names
+#
+
+for p in post
+   let pnames = p["facts"][*]["property"]
+   for property in pnames
+      collect pn = property with count into cnt
+      return [pn,cnt]
+
+#
+# fetch tag classes (not too many!)
+#
+
+for p in post
+   for tag in p.tags
+        collect class=tag.class with count into cnt
+        return [class,cnt]
