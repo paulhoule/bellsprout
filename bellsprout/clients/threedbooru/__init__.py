@@ -1,4 +1,5 @@
 import gzip
+import re
 from pathlib import Path
 from bs4 import BeautifulSoup
 
@@ -12,6 +13,9 @@ def find_files():
 class CantParseTagException(Exception):
     pass
 
+
+class Rules:
+    Size = re.compile(r"(\d*)x(\d*) \((\d*\.\d*) KB\)")
 
 def read3d(filename):
     with gzip.open(filename,"rb") as HTML:
@@ -61,6 +65,18 @@ def read3d(filename):
                     "by_id": int(links[1]["href"].split("/")[-1]),
                     "by_name": links[1].text
                 }
+                html = None
+            elif key == "Size":
+                link = element.a
+                match = Rules.Size.match(value)
+                value = {
+                    "image_link": link["href"],
+                    "width": match.group(1),
+                    "height": match.group(2),
+                    "kb": match.group(3)
+                }
+                html = None
+
             fact = {
                 "property": key,
                 "value": value
