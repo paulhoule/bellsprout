@@ -5,8 +5,8 @@ from bs4 import BeautifulSoup
 
 
 def find_files():
-    where = Path.home() / "3dbooru"
-    files = list(where.glob("*.gz"))
+    where = Path.home() / "4dbooru"
+    files = list(where.glob("*/*/*.gz"))
     return files
 
 
@@ -15,7 +15,7 @@ class CantParseTagException(Exception):
 
 
 class Rules:
-    Size = re.compile(r"(\d*)x(\d*) \((\d*\.\d*) KB\)")
+    Size = re.compile(r"(\d*)x(\d*) \(([^)]*)\)")
 
 def read3d(filename):
     with gzip.open(filename,"rb") as HTML:
@@ -62,20 +62,46 @@ def read3d(filename):
                 links = element.find_all("a")
                 value = {
                     "when": links[0]["title"],
-                    "by_id": int(links[1]["href"].split("/")[-1]),
+                    "by_id": links[1]["href"].split("/")[-1],
                     "by_name": links[1].text
                 }
                 html = None
             elif key == "Size":
                 link = element.a
                 match = Rules.Size.match(value)
+                if match:
+                    value = {
+                        "image_link": link["href"],
+                        "width": match.group(1),
+                        "height": match.group(2),
+                        "bytes": match.group(3)
+                    }
+                    html = None
+            elif key == "Source":
+                value = element.a["href"]
+                html = None
+            elif key == "Rating":
+                html = None
+            elif key == "Score":
+                value = value.split(" ")[0]
+                html = None
+            elif key == "Favorited by":
+                key = key.replace("FavoritedBy","")
+                ids = []
+                names = []
+                for link in element.find_all("a"):
+                    ids += [link["href"].split("/")[-1]]
+                    names += [link.text]
                 value = {
-                    "image_link": link["href"],
-                    "width": match.group(1),
-                    "height": match.group(2),
-                    "kb": match.group(3)
+                    "ids": ids,
+                    "names": names
                 }
                 html = None
+            elif key == "Approver":
+                value = {
+                    "id": element.a["href"].split("/")[-1],
+                    "name": element.a.text
+                }
 
             fact = {
                 "property": key,
